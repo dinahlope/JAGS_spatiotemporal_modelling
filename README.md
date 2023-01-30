@@ -1,4 +1,4 @@
-# JAGS spatiotemporal modelling
+# Spatiotemporal modelling in JAGS
 
 Syntax used for the paper "JAGS model specification for spatiotemporal modelling" which explores the runtime when running a model that uses 1D nested indexing versus 2D nested indexing (spatial and temporal indices).
 
