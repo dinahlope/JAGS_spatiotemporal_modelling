@@ -1,2 +1,3 @@
 # JAGS_spatiotemporal_modelling
-Speeding up spatiotemporal modelling in JAGS
+
+Syntax used for the paper "JAGS model specification for spatiotemporal modelling"
