@@ -46,7 +46,7 @@ for (num_records in c(100, 500, 1000, 2000, 4000, 8000, 10000)){
                          index = region_index,
                          z = zdata,
                          space = s,
-                         n = num_records)
+                         N = num_records)
     
     # Specify the model
     modelString = "
