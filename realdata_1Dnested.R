@@ -9,7 +9,7 @@
 # model specification
 modelString = "
   model {
-  for(i in 1:n){
+  for(i in 1:N){
   
       pi[i]  <- ifelse(m == 1, (ifelse((i <= 2409 || i >=  2337|| i <= 1022 || i >= 950) || (i <= 5329 || i >= 5257) || (i <= 1898 || i >= 1826) || (i <= 5475 || i >= 5403)
                                             || (i <= 730 || i >= 658) || (i <= 3212 || i >= 3140) || (i <= 3723 || i >= 3651),
