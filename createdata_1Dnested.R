@@ -51,7 +51,7 @@ for (num_records in c(100, 500, 1000, 2000, 4000, 8000, 10000)){
     # Specify the model
     modelString = "
       model {
-      for(i in 1:n){
+      for(i in 1:N){
         lambda[i] <- exp(a[1] + x_var[i,1]*a[2] + theta[index[i]])
         z[i] ~ dpois(lambda[i])
       }
