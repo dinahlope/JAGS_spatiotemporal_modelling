@@ -11,8 +11,8 @@ modelString = "
   model {
   for(i in 1:N){
   
-      pi[i]  <- ifelse(m == 1, (ifelse((i <= 2409 || i >=  2337|| i <= 1022 || i >= 950) || (i <= 5329 || i >= 5257) || (i <= 1898 || i >= 1826) || (i <= 5475 || i >= 5403)
-                                            || (i <= 730 || i >= 658) || (i <= 3212 || i >= 3140) || (i <= 3723 || i >= 3651),
+      pi[i]  <- ifelse(m == 1, (ifelse((i <= 2409 && i >=  2337)|| (i <= 1022 && i >= 950) || (i <= 5329 && i >= 5257) || (i <= 1898 && i >= 1826) || (i <= 5475 && i >= 5403)
+                                            || (i <= 730 && i >= 658) || (i <= 3212 && i >= 3140) || (i <= 3723 && i >= 3651),
 
                                           (guess*(1/2) + (1.0-guess)* ilogit(b[1] + tested[i,1]*b[2] +
                                                     mintemp[i,1]*b[3] + wind_N[i,1]*b[4] + b[5]*daycount[i,1] + b[6]*daycount2[i,1] + b[7]*daycount3[i,1])),
@@ -21,8 +21,8 @@ modelString = "
                         (guess*(1/2)  + (1.0-guess)*ilogit(b[1] + tested[i,1]*b[2] + mintemp[i,1]*b[3] + wind_N[i,1]*b[4])))
                      
     log.lambda[i] <- ifelse(m == 1, log(pop[i,1]+ a[6] + vac2[i,1]*a[1] + vacn[i,1]*a[2] + theta[index[i]] + phi[index[i]]),
-                              (ifelse((i <= 2409 || i >=  2337|| i <= 1022 || i >= 950) || (i <= 5329 || i >= 5257) || (i <= 1898 || i >= 1826) || (i <= 5475 || i >= 5403)
-                                            || (i <= 730 || i >= 658) || (i <= 3212 || i >= 3140) || (i <= 3723 || i >= 3651), 
+                              (ifelse((i <= 2409 && i >=  2337) || (i <= 1022 && i >= 950) || (i <= 5329 && i >= 5257) || (i <= 1898 && i >= 1826) || (i <= 5475 && i >= 5403)
+                                            || (i <= 730 && i >= 658) || (i <= 3212 && i >= 3140) || (i <= 3723 && i >= 3651), 
                                            
                                            log(pop[i,1]+ a[6] + vac2[i,1]*a[1] + vacn[i,1]*a[2] + 
                                               theta[index[i]] + phi[index[i]] + a[4]*daycount[i,1] + a[3]*daycount2[i,1] + a[5]*daycount3[i,1]),
