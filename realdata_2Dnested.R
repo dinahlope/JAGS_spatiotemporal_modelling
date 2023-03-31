@@ -20,13 +20,13 @@ modelString = "
                                    (guess*(1/2) + (1.0-guess)* ilogit(b[1] + tested[t,s]*b[2] + mintemp[t,s]*b[3] + wind_N[t,s]*b[4])))),
                         (guess*(1/2)  + (1.0-guess)*ilogit(b[1] + tested[t,s]*b[2] + mintemp[t,s]*b[3] + wind_N[t,s]*b[4])))
                      
-    log.lambda[t,s] <- ifelse(m == 1, log(pop[t,s]+ a[6] + vac2[t,s]*a[1] + vacn[t,s]*a[2] + theta[index[s]] + phi[index[s]]),
+    log.lambda[t,s] <- ifelse(m == 1, log(pop[t,s]+ a[6] + vac2[t,s]*a[1] + vacn[t,s]*a[2] + theta[s] + phi[s]),
                               (ifelse((s == 10 || s == 14 || s == 26 || s == 45 || s == 52 || s == 74 || s == 76 || s == 33), 
                                            
                                            log(pop[t,s]+ a[6] + vac2[t,s]*a[1] + vacn[t,s]*a[2] + 
-                                              theta[index[s]] + phi[index[s]] + a[4]*daycount[t,s] + a[3]*daycount2[t,s] + a[5]*daycount3[t,s]),
+                                              theta[s] + phi[s] + a[4]*daycount[t,s] + a[3]*daycount2[t,s] + a[5]*daycount3[t,s]),
                                        
-                                           log(pop[t,s]+ a[6] + vac2[t,s]*a[1] + vacn[t,s]*a[2] +  theta[index[s]] + phi[index[s]]))))
+                                           log(pop[t,s]+ a[6] + vac2[t,s]*a[1] + vacn[t,s]*a[2] + theta[s] + phi[s]))))
     
     z[t,s] ~ dpois(pi[t,s]*exp(log.lambda[t,s]))  
     
