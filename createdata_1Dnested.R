@@ -1,9 +1,9 @@
-#'
-#' JAGS indexing study
-#' @author Dinah Lope, Haydar Demirhan
+#' JAGS model specification for spatiotemporal epidemiological modelling
+#' @author Dinah Lope/ Haydar Demirhan
 #' @version 1.0
 #' @created 07/06/2022
-#'
+#' @license GPLv3
+#' 
 
 library(rjags)
 library(runjags)

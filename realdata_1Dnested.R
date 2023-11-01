@@ -1,11 +1,9 @@
-#'' 
-#' Used in JAGS modelling study from
-#' Spatiotemporal modelling of
-#' Underreported COVID-19 cases study
-#' 
+#'
+#' JAGS model specification for spatiotemporal epidemiological modelling
 #' @author Dinah Lope/ Haydar Demirhan
+#' @version 1.0
 #' @created 15/01/2023
-#''
+#' @license GPLv3
 
 library(rjags)
 library(runjags)

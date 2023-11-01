@@ -1,10 +1,9 @@
-#'
-#' JAGS indexing study
+#' JAGS model specification for spatiotemporal epidemiological modelling
 #' @author Dinah Lope
 #' @version 1.0
 #' @created 20/06/2020
-#'
-
+#' @license GPLv3
+#' 
 # includes all the the setup of
 # packages and files
 

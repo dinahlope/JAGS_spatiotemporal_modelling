@@ -1,9 +1,11 @@
 #'
 #' JAGS model specification for spatiotemporal epidemiological modelling
-#' @author Dinah Lope/ Haydar Demirhan
-#' @version 1.1
-#' @created 15/01/2023
+#' @author Dinah Lope, Haydar Demirhan
+#' @version 1.0
+#' @created 11/10/2023
 #' @license GPLv3
+#' 
+#' 
 
 library(rjags)
 library(runjags)
@@ -15,7 +17,7 @@ library(ggplot2)
 library(reshape2)
 library(tictoc)
 
-source("0 settings.R")
+# source("0 settings.R")
 
 #load JAGS utility file
 source("DBDA2E-utilities.R")
@@ -27,8 +29,10 @@ load.module("GeoJAGS")
 # source: https://github.com/dinahlope/Spatiotemporal_Bayesian_COVID19
 load(file="COVID19DATA.RData")
 
+
 #load all other data required
 load(file = "sup_data.RData")
+load(file = "region_index.RData")
 
 covdat <- datcov %>% 
   group_by(lganame) %>%
@@ -36,7 +40,6 @@ covdat <- datcov %>%
          daycount2 = daycount^2, 
          daycount3 = daycount^3) %>%
   ungroup() %>% 
-  arrange(lgacode) %>%
   rename(pct_second_tmp = seconddose_pct,
          vac_n = vaccentres_n) %>% 
   left_join(pop_dat)
@@ -45,90 +48,89 @@ cov_N = length(covdat$covidcase)
 space = length(unique(covdat$lganame))
 n_regions = space
 
-TSmodel <- array(NA,space) 
-for (s in 1:space){
-  TSmodel[s] <- ifelse(s %in% c(10, 14, 26, 45, 52, 74, 76, 33), 1,0)
-}
+TSmodel <- array(0,cov_N) 
+TSmodel[2337:2409] <- 1
+TSmodel[950:1022] <- 1
+TSmodel[5257:5329] <- 1
+TSmodel[1826:1898] <- 1
+TSmodel[5403:5475] <- 1
+TSmodel[658:730] <- 1
+TSmodel[3140:3212] <- 1
+TSmodel[3651:3723] <- 1
 
 cov_constants = list(
   n = cov_N,
   n_adj = n_adj,
   adj = wm,
+
+  vac2 = as.matrix(scale(covdat$pct_second_tmp)),
+  vacn = as.matrix(scale(covdat$vac_n)),
+  daycount3  = as.matrix(covdat$daycount3),
+  daycount2  = as.matrix(covdat$daycount2),
+  daycount  = as.matrix(covdat$daycount),
   
-  vac2 = acast(covdat %>% mutate(pct_second_tmp = scale(pct_second_tmp)), date~lganame, value.var="pct_second_tmp"), 
-  vacn = acast(covdat %>% mutate(vac_n = scale(vac_n)), date~lganame, value.var="vac_n"), 
-  daycount3  = acast(covdat, date~lganame, value.var="daycount3"),
-  daycount2  = acast(covdat, date~lganame, value.var="daycount2"), 
-  daycount = acast(covdat, date~lganame, value.var="daycount"), 
-  
-  tested = acast(covdat %>% mutate(tested = scale(tested)), date~lganame, value.var="tested"),
-  mintemp = acast(covdat, date~lganame, value.var="min_temp"), 
-  wind_N = acast(covdat, date~lganame, value.var="wind_direc_N"),
-  pop = acast(covdat %>% mutate(pop = (pop)), date~lganame, value.var="pop"),
+  tested = as.matrix(covdat$tested),
+  mintemp = as.matrix(covdat$min_temp), 
+  wind_N = as.matrix(covdat$wind_direc_N),
+  pop = as.matrix(covdat$pop),
   
   R=n_regions,
+  index=region_index,
   w=weights,
   l_adj=length(adjacency),
   
-  z = acast(covdat, date~lganame, value.var="covidcase"),
+  z=covdat$covidcase,
   zrs = array(0,n_regions),
-  
-  time = length(unique(covdat$date)),
-  space = length(unique(covdat$lganame)),
   TSmodel = TSmodel
-  
 )
-
 
 # Specify the model
 modelString = "
-
   model {
-  for(t in 1:time){
-    for(s in 1:space){
+  for(i in 1:n){
   
-      pi[t,s]  <- ifelse(m == 1, (ifelse(TSmodel[s] == 1, ( guess*(1/2) + (1.0-guess)* ilogit(b[1] + tested[t,s]*b[2] + mintemp[t,s]*b[3] + wind_N[t,s]*b[4] +
-                                                                                              b[5]*daycount[t,s] + b[6]*daycount2[t,s] + b[7]*daycount3[t,s]) ),
-                                                          ( guess*(1/2) + (1.0-guess)* ilogit(b[1] + tested[t,s]*b[2] + mintemp[t,s]*b[3] + wind_N[t,s]*b[4]) ) )  ),
-                                 (guess*(1/2)  + (1.0-guess)*ilogit(b[1] + tested[t,s]*b[2] + mintemp[t,s]*b[3] + wind_N[t,s]*b[4])))
-  
-      log.lambda[t,s] <- ifelse(m == 1, log(pop[t,s]+ a[6] + vac2[t,s]*a[1] + vacn[t,s]*a[2] + theta[s] + phi[s]),
-                                        (ifelse(TSmodel[s] == 1, log(pop[t,s]+ a[6] + vac2[t,s]*a[1] + vacn[t,s]*a[2] + theta[s] + phi[s] + 
-                                                                               a[4]*daycount[t,s] + a[3]*daycount2[t,s] + a[5]*daycount3[t,s]),
-                                                                 log(pop[t,s]+ a[6] + vac2[t,s]*a[1] + vacn[t,s]*a[2] + theta[s] + phi[s]))))
-  
-      z[t,s] ~ dpois(pi[t,s]*exp(log.lambda[t,s]))
-  
-    }
-  }
+      pi[i]  <- ifelse(m == 1, (ifelse(TSmodel[i] == 1, ( guess*(1/2) + (1.0-guess)* ilogit(b[1] + tested[i,1]*b[2] +
+                                                    mintemp[i,1]*b[3] + wind_N[i,1]*b[4] + b[5]*daycount[i,1] + b[6]*daycount2[i,1] + b[7]*daycount3[i,1]) ),
+
+                                   ( guess*(1/2) + (1.0-guess)* ilogit(b[1] + tested[i,1]*b[2] + mintemp[i,1]*b[3] + wind_N[i,1]*b[4]) ) )  ),
+                        ( guess*(1/2)  + (1.0-guess)*ilogit(b[1] + tested[i,1]*b[2] + mintemp[i,1]*b[3] + wind_N[i,1]*b[4])) )
+                     
+    log.lambda[i] <- ifelse(m == 1, log(pop[i,1]+ a[6] + vac2[i,1]*a[1] + vacn[i,1]*a[2] + theta[index[i]] + phi[index[i]]),
+                              (ifelse(TSmodel[i] == 1, log(pop[i,1]+ a[6] + vac2[i,1]*a[1] + vacn[i,1]*a[2] + 
+                                              theta[index[i]] + phi[index[i]] + a[4]*daycount[i,1] + a[3]*daycount2[i,1] + a[5]*daycount3[i,1]),
+                                           log(pop[i,1]+ a[6] + vac2[i,1]*a[1] + vacn[i,1]*a[2] +  theta[index[i]] + phi[index[i]]))))
+    
+    z[i] ~ dpois(pi[i]*exp(log.lambda[i]))
+  }  
   
   sigma.theta ~ dnorm(0,1)T(0,)
   for(j in 1:R){
-    theta[j] ~ dnorm(0, 1/sigma.theta) 
+  theta[j] ~ dnorm(0, 1/sigma.theta) 
   }
-    
+  
   phi[1:R] ~ dmnorm(zrs[1:R], precMatrixCAR(adj[1:R, 1:R], rho.car, tau))
   
   for(i in 1:6){
-    a[i] ~ dnorm(0, 1/sigmaA)
+  a[i] ~ dnorm(0, 1/sigmaA)
   }
   sigmaA ~ dnorm(20,0.001)T(0,) 
-
+  
   for(i in 1:7){
-    b[i] ~ dnorm(0, 1/sigmaB)
+  b[i] ~ dnorm(0, 1/sigmaB)
   }
   sigmaB ~ dnorm(30,0.001)T(0,) 
   
   nu ~ dnorm(0,1)T(0,) 
   tau <- 1/(nu*nu) 
   rho.car <- 0.999 
-
+  
   m ~ dcat(mPriorProb[])
   mPriorProb[1]  <- 0.5
   mPriorProb[2]  <- 0.5
   guess ~ dbeta(1,9)
 }
 "
+# close quote for modelString
 writeLines(modelString , con="TEMPmodel.txt")
 
 #initialize chains
@@ -176,15 +178,10 @@ parameters <- c("a[1]", "a[2]", "a[3]", "a[4]", "a[5]", "a[6]",
                 "b[1]", "b[2]", "b[3]", "b[4]", "b[5]", "b[6]", "b[7]",
                 "nu", "sigma.theta", "m", "sigmaA", "sigmaB", "guess")
 
-time = length(unique(covdat$date))
-space = length(unique(covdat$lganame))
-
-for (t in 1:time){
-  for(s in 1:space){
-  parameters <- c(parameters ,
-                  paste0("pi[",t,",",s,"]"),
-                  paste0("log.lambda[",t,",", s,"]"))
-  }
+for (i in 1:nrow(covdat)){
+  parameters <- c(parameters , 
+                  paste0("pi[",i,"]"),
+                  paste0("log.lambda[",i,"]"))
 }
 
 for (r in 1:n_regions){
@@ -193,12 +190,17 @@ for (r in 1:n_regions){
                   paste0("theta[",r,"]"))
 }
 
-
 adaptSteps = 100
 burnInSteps = 5000
 nChains = 4
 thinSteps = 11
 numSavedSteps = 43000
+
+# adaptSteps = 10
+# burnInSteps = 10
+# nChains = 4
+# thinSteps = 1
+# numSavedSteps = 10
 nIter = ceiling((numSavedSteps*thinSteps)/nChains)
 
 set.seed(2021)
