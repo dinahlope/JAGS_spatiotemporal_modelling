@@ -1,4 +1,4 @@
-#'
+
 #' JAGS model specification for spatiotemporal epidemiological modelling
 #' @author Dinah Lope/ Haydar Demirhan
 #' @version 1.1
@@ -51,8 +51,6 @@ for (s in 1:space){
 }
 
 cov_constants = list(
-  n = cov_N,
-  n_adj = n_adj,
   adj = wm,
   
   vac2 = acast(covdat %>% mutate(pct_second_tmp = scale(pct_second_tmp)), date~lganame, value.var="pct_second_tmp"), 
